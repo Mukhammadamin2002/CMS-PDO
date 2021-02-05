@@ -174,40 +174,76 @@ if(isset($_POST['Submit'])) {
 	<br>
 				<?php } ?>
 				<!-- Comment Part Start -->
+
+				<!-- Fetching existing comment START -->
+
+				<span class="FieldInfo">Comments</span>
+				<br><br>
+
+				<?php 
+
+
+				global $ConnectingDB;
+				$sql = "SELECT * FROM comments WHERE post_id='$SearchQueryParameter' AND status='ON'";
+				$stmt = $ConnectingDB->query($sql);
+				while ($DataRows = $stmt->fetch()) {
+					$CommentDate = $DataRows['datetime'];
+					$CommenterName = $DataRows['name'];
+					$CommentContent = $DataRows['comment'];
+
+				?>
+
+				<div>
+					<div class="media" style="background-color: #F6F7F9">
+						<img class="d-block img-fluid ml-2 align-self-center" style="width: 80px; height: 80px" src="images/user.jpg" alt="">
+						<div class="media-body ml-2">
+
+							<h6 class="lead"><?= $CommenterName ?></h6>
+							<p class="small"><?= $CommentDate ?></p>
+							<p><?= $CommentContent ?></p>
+						</div>
+					</div>
+				</div>
+				<hr>
+
+			<?php } ?>
+
+				<!-- Fetching existing comment END -->
+
 				<div class="">
 					<form action="FullPost.php?id=<?= $SearchQueryParameter  ?>" class="" method="post">
 						<div class="card mb-3">
 							<div class="card-header">
 								<h5 class="FieldInfo">Share your thought about this posts</h5>
 							</div>
-			<div class="card-body">
-				<div class="form-group">
-					<div class="input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-user text-dark"></i></span>
+							<div class="card-body">
+								<div class="form-group">
+									<div class="input-group">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><i class="fas fa-user text-dark"></i></span>
+										</div>
+										<input class="form-control" type="text" name="CommenterName" placeholder="Name" value="">
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="input-group">
+										<div class="input-group-prepend">
+											<span class="input-group-text"><i class="fas fa-envelope text-primary"></i></span>
+										</div>
+										<input class="form-control" type="email" name="CommenterEmail" placeholder="Email" value="">
+									</div>
+								</div>
+								<div class="form-group">
+									<textarea name="CommenterThoughts" id="" cols="60" class="form-control" rows="6"></textarea>
+								</div>
+								<div class="form-group">
+									<button type="submit" name="Submit" class="btn btn-primary">Submit</button>
+								</div>
+							</div>
 						</div>
-						<input class="form-control" type="text" name="CommenterName" placeholder="Name" value="">
-					</div>
-				</div>
-				<div class="form-group">
-					<div class="input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-envelope text-primary"></i></span>
-						</div>
-						<input class="form-control" type="email" name="CommenterEmail" placeholder="Email" value="">
-					</div>
-				</div>
-				<div class="form-group">
-					<textarea name="CommenterThoughts" id="" cols="60" class="form-control" rows="6"></textarea>
-				</div>
-				<div class="form-group">
-					<button type="submit" name="Submit" class="btn btn-primary">Submit</button>
-				</div>
-			</div>
-						</div>
-						
 					</form>
 				</div>
+				<!-- Comment Part End -->
 			</div>
 			<!-- Main Area End -->
 
@@ -218,8 +254,8 @@ if(isset($_POST['Submit'])) {
 				
 			</div>
             <!-- Side Area End -->
-
 		</div>
+
 	</div>
 
 	<!-- HEADER  END-->
