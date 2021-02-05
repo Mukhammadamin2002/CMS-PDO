@@ -2,43 +2,41 @@
 <?php require_once("Includes/DB.php"); ?>
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
+	
 <?php 
 
-if(isset($_POST['Submit'])) {
-		$Category = $_POST["CategoryTitle"];
-		$Admin = "John";
-		date_default_timezone_set("Asia/Karachi");
-		$CurrentTime = time();
-		$DateTime = strftime("%B-%d-%Y %H-%M-%S", $CurrentTime);
-
-		if (empty($Category)) {
-			$_SESSION["ErrorMessage"] = 'All fields must be filled out!';
-			Redirect_to("Categories.php");
-		} elseif (strlen($Category) < 3) {
-			$_SESSION["ErrorMessage"] = 'Category title should be greater than 2 characters';
-			Redirect_to("Categories.php");
-		} elseif (strlen($Category) > 49) {
-			$_SESSION["ErrorMessage"] = 'Category title should be less than 50 characters';
-			Redirect_to("Categories.php");
-		} else {
-			// Query to insert category in DB when everything is fine
+$SearchQueryParameter = $_GET['id'];
+			// Fetching Existing Content according to our 
 			global $ConnectingDB;
-			$sql = "INSERT INTO category(title, author, datetime)";
-			$sql .= "VALUES(:categoryName,:adminName,:dateTime)";
-			$stmt = $ConnectingDB->prepare($sql);
-			$stmt->bindValue(':categoryName',$Category);
-			$stmt->bindValue(':adminName', $Admin);
-			$stmt->bindValue(':dateTime', $DateTime);
-			$Execute = $stmt->execute();
+			$sql = "SELECT * FROM posts WHERE id='$SearchQueryParameter'";
+			$stmt = $ConnectingDB->query($sql);
+			while ($DataRows 		 = $stmt->fetch()) {
+
+				$TitleToBeDeleted 	 = $DataRows['title'];
+				$CategoryToBeDeleted = $DataRows['category'];
+				$ImageToBeDeleted 	 = $DataRows['image'];
+				$PostToBeDeleted  	 = $DataRows['post'];
+			}
+
+// echo $ImageToBeUpdated;
+if(isset($_POST['Submit'])) {
+
+			// Query to DELETE Post in DB when everything is fine
+			global $ConnectingDB;
+			$sql = "DELETE FROM posts WHERE id='$SearchQueryParameter'";
+			$Execute = $ConnectingDB->query($sql);
+
+			move_uploaded_file($_FILES['Image']["tmp_name"], $Target);
 
 			if ($Execute) {
-				$_SESSION["SuccessMessage"]="Category with id : " .$ConnectingDB->lastInsertId()." Added Successfully";
-				Redirect_to("Categories.php");
+				$Target_Path_To_DELETED_Image = "Uploads/$ImageToBeDeleted";
+				unlink($Target_Path_To_DELETED_Image);
+				$_SESSION["SuccessMessage"]="Post DELETED Successfully";
+				Redirect_to("Posts.php");
 			} else {
 				$_SESSION["ErrorMessage"] = 'Something went wrong. Try Again !';
-			Redirect_to("Categories.php");
+				Redirect_to("Posts.php");
 			}
-		}
 } // Ending of Submit Button If-Condition 
 
  ?>
@@ -49,7 +47,7 @@ if(isset($_POST['Submit'])) {
 <meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="X-UA-Compatible" content="ie-edge">
-		<title>Categories</title>
+		<title>Delete Post</title>
 		<link rel="stylesheet" href="Css/bootstrap.min.css">
 		<link rel="stylesheet" href="Css/Styles.css">
 		<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
@@ -57,7 +55,7 @@ if(isset($_POST['Submit'])) {
 <body>
 	<!-- Navbar -->
 	<div style="height:10px; background: #090979;"></div>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 		<div class="container">
 			<a href="#" class="navbar-brand">Mukhammadamin</a>
 				<button class="navbar-toggler" data-toggle="collapse" data-target="#navbarcollapseCMS" >
@@ -106,7 +104,7 @@ if(isset($_POST['Submit'])) {
 			<div class="container">
 				<div class="row">
 					<div class="col-md-12">
-					<h1><i class="fas fa-edit" style="color: #097879"></i> Manage Categories</h1>
+					<h1><i class="fas fa-trash text-danger"></i> Delete Post </h1>
 					</div>
 				</div>
 			</div>
@@ -119,18 +117,40 @@ if(isset($_POST['Submit'])) {
 
 <section class="container py-2 mb-4">
 	<div class="row">
-		<div class="offset-lg-1 col-lg-10" style="min-height: 350px;">
+		<div class="offset-lg-1 col-lg-10" style="min-height: 400px;">
 			<?php echo ErrorMessage(); ?>
 			<?php echo SuccessMessage(); ?>
-			<form action="Categories.php" method="post">
+
+
+
+			<form action="DeletePost.php?id=<?php echo $SearchQueryParameter; ?>" method="post" enctype="multipart/form-data">
 				<div class="card bg-secondary text-light mb-3">
-					<div class="card-header">
-						<h1>Add New Category</h1>
-					</div>
+					
 					<div class="card-body bg-dark">
 						<div class="form-group">
-							<label for="title"><span class="FieldInfo">Category Title: </span></label>
-							<input class="form-control" type="text" name="CategoryTitle" id="title" placeholder="Type title here..." value="">
+							<label for="title"><span class="FieldInfo">Post Title: </span></label>
+							<input disabled class="form-control" type="text" name="PostTitle" id="title" placeholder="Type title here..." value="<?= $TitleToBeDeleted; ?>">
+						</div>
+
+						<div class="form-group">
+							<span class="FieldInfo">Prefered Category was: </span>
+							<?= $CategoryToBeDeleted; ?>
+							<br>
+						</div>
+
+						<div class="form-group">
+							<span class="FieldInfo">Prefered Image was: </span>
+							<img src="Uploads/<?= $ImageToBeDeleted; ?>" width=150px; height='70px' alt="" value="">
+							<br>
+							<label for="imageSelect"><span class="FieldInfo"> Select Image: </span></label>
+
+						</div>
+
+						<div class="form-group">
+							<label for="Post"><span class="FieldInfo"> Post: </span></label>
+							<textarea disabled class="form-control" name="PostDescription" rows="8" cols="80" id="Post" cols="30" rows="10">
+								<?= $PostToBeDeleted; ?>
+							</textarea>
 						</div>
 
 						<div class="row text-center">
@@ -139,13 +159,12 @@ if(isset($_POST['Submit'])) {
 							</div>
 
 							<div class="col-lg-6 mt-2">
-								<button type="submit" name="Submit" class="btn btn-success  btn-block">
-									<i class="fas fa-check"></i> Publish
+								<button type="submit" name="Submit" class="btn btn-danger  btn-block">
+									<i class="fas fa-trash"></i> Delete
 								</button>
 							</div>
 
 						</div>
-
 					</div>
 				</div>
 			</form>
@@ -170,16 +189,12 @@ if(isset($_POST['Submit'])) {
 		</div>
 	<div style="height:10px; background: #090979;"></div>
 	</footer>	
-
-
-<!-- JavaScript Bundle with Popper -->
-
-
-<!-- jQuery and Bootstrap Bundle (includes Popper) -->
-	<script src="js/jquery-3.5.1.slim.min.js"></script>
-	<script src="js/bootstrap.bundle.min.js" ></script>
-	<script>
-		$('#year').text(new Date().getFullYear());
-	</script>
-	</body>
+	<!-- FOOTER END -->
+		<!-- jQuery and Bootstrap Bundle (includes Popper) -->
+		<script src="js/jquery-3.5.1.slim.min.js"></script>
+		<script src="js/bootstrap.bundle.min.js" ></script>
+		<script>
+			$('#year').text(new Date().getFullYear());
+		</script>
+</body>
 </html>

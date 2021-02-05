@@ -5,38 +5,47 @@
 <?php 
 
 if(isset($_POST['Submit'])) {
-		$Category = $_POST["CategoryTitle"];
+		$PostTitle = $_POST["PostTitle"];
+		$Category = $_POST["Category"];
+		$Image = $_FILES["Image"]["name"];
+		$Target = "Uploads/".basename($_FILES["Image"]["name"]);
+		$PostText = $_POST["PostDescription"];
 		$Admin = "John";
 		date_default_timezone_set("Asia/Karachi");
 		$CurrentTime = time();
-		$DateTime = strftime("%B-%d-%Y %H-%M-%S", $CurrentTime);
+		$DateTime = strftime("%B-%d-%Y %H:%M:%S", $CurrentTime);
 
-		if (empty($Category)) {
-			$_SESSION["ErrorMessage"] = 'All fields must be filled out!';
-			Redirect_to("Categories.php");
-		} elseif (strlen($Category) < 3) {
-			$_SESSION["ErrorMessage"] = 'Category title should be greater than 2 characters';
-			Redirect_to("Categories.php");
-		} elseif (strlen($Category) > 49) {
-			$_SESSION["ErrorMessage"] = 'Category title should be less than 50 characters';
-			Redirect_to("Categories.php");
+		if (empty($PostTitle)) {
+			$_SESSION["ErrorMessage"] = 'Title Can\'t be empty!';
+			Redirect_to("AddNewPost.php");
+		} elseif (strlen($Category) < 5) {
+			$_SESSION["ErrorMessage"] = 'Post Title should be greater than 5 characters';
+			Redirect_to("AddNewPost.php");
+		} elseif (strlen($PostText) > 9999) {
+			$_SESSION["ErrorMessage"] = 'Post Description should be less than 10000 characters';
+			Redirect_to("AddNewPost.php");
 		} else {
-			// Query to insert category in DB when everything is fine
+			// Query to insert Post in DB when everything is fine
 			global $ConnectingDB;
-			$sql = "INSERT INTO category(title, author, datetime)";
-			$sql .= "VALUES(:categoryName,:adminName,:dateTime)";
+			$sql = "INSERT INTO posts(datetime, title, category, author, image, post)";
+			$sql .= "VALUES(:dateTime,:postTitle,:categoryName,:adminName,:imageName,:postDescription)";
 			$stmt = $ConnectingDB->prepare($sql);
+			$stmt->bindValue(':dateTime', $DateTime);
+			$stmt->bindValue(':postTitle', $PostTitle);
 			$stmt->bindValue(':categoryName',$Category);
 			$stmt->bindValue(':adminName', $Admin);
-			$stmt->bindValue(':dateTime', $DateTime);
+			$stmt->bindValue(':imageName', $Image);
+			$stmt->bindValue(':postDescription', $PostText);
 			$Execute = $stmt->execute();
 
+			move_uploaded_file($_FILES['Image']["tmp_name"], $Target);
+
 			if ($Execute) {
-				$_SESSION["SuccessMessage"]="Category with id : " .$ConnectingDB->lastInsertId()." Added Successfully";
-				Redirect_to("Categories.php");
+				$_SESSION["SuccessMessage"]="Post with id : " .$ConnectingDB->lastInsertId()." Added Successfully";
+				Redirect_to("AddNewPost.php");
 			} else {
 				$_SESSION["ErrorMessage"] = 'Something went wrong. Try Again !';
-			Redirect_to("Categories.php");
+				Redirect_to("AddNewPost.php");
 			}
 		}
 } // Ending of Submit Button If-Condition 
@@ -49,7 +58,7 @@ if(isset($_POST['Submit'])) {
 <meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="X-UA-Compatible" content="ie-edge">
-		<title>Categories</title>
+		<title>Posts</title>
 		<link rel="stylesheet" href="Css/bootstrap.min.css">
 		<link rel="stylesheet" href="Css/Styles.css">
 		<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
@@ -57,7 +66,7 @@ if(isset($_POST['Submit'])) {
 <body>
 	<!-- Navbar -->
 	<div style="height:10px; background: #090979;"></div>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 		<div class="container">
 			<a href="#" class="navbar-brand">Mukhammadamin</a>
 				<button class="navbar-toggler" data-toggle="collapse" data-target="#navbarcollapseCMS" >
@@ -106,7 +115,7 @@ if(isset($_POST['Submit'])) {
 			<div class="container">
 				<div class="row">
 					<div class="col-md-12">
-					<h1><i class="fas fa-edit" style="color: #097879"></i> Manage Categories</h1>
+					<h1><i class="fas fa-edit" style="color: #097879"></i> Add New Post</h1>
 					</div>
 				</div>
 			</div>
@@ -119,18 +128,47 @@ if(isset($_POST['Submit'])) {
 
 <section class="container py-2 mb-4">
 	<div class="row">
-		<div class="offset-lg-1 col-lg-10" style="min-height: 350px;">
+		<div class="offset-lg-1 col-lg-10" style="min-height: 400px;">
 			<?php echo ErrorMessage(); ?>
 			<?php echo SuccessMessage(); ?>
-			<form action="Categories.php" method="post">
+			<form action="AddNewPost.php" method="post" enctype="multipart/form-data">
 				<div class="card bg-secondary text-light mb-3">
-					<div class="card-header">
-						<h1>Add New Category</h1>
-					</div>
+					
 					<div class="card-body bg-dark">
 						<div class="form-group">
 							<label for="title"><span class="FieldInfo">Category Title: </span></label>
-							<input class="form-control" type="text" name="CategoryTitle" id="title" placeholder="Type title here..." value="">
+							<input class="form-control" type="text" name="PostTitle" id="title" placeholder="Type title here..." value="">
+						</div>
+
+						<div class="form-group">
+							<label for="CategoryTitle"><span class="FieldInfo">Choose Category: </span></label>
+							<select name="Category" id="CategoryTitle" class="form-control">
+								<!-- Fetching all the categories from category table -->
+								<?php global $ConnectingDB;
+								$sql = "SELECT id,title FROM category";
+								$stmt = $ConnectingDB->query($sql);
+								while ($DataRows = $stmt->fetch()) {
+									
+									$Id = $DataRows["id"];
+									$CategoryName = $DataRows["title"]; 
+						
+								 ?>
+								 <option><?php echo $CategoryName; ?></option>
+						 	<?php } ?>
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label for="imageSelect"><span class="FieldInfo"> Select Image: </span></label>
+							<div class="custom-file">
+								<input class="custom-file-input" type="File" name="Image" id="imageSelect" value="">
+								<label for="imageSelect" class="custom-file-label">Select Image</label>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="Post"><span class="FieldInfo"> Post: </span></label>
+							<textarea class="form-control" name="PostDescription" rows="8" cols="80" id="Post" cols="30" rows="10"></textarea>
 						</div>
 
 						<div class="row text-center">
@@ -145,7 +183,6 @@ if(isset($_POST['Submit'])) {
 							</div>
 
 						</div>
-
 					</div>
 				</div>
 			</form>
@@ -170,16 +207,12 @@ if(isset($_POST['Submit'])) {
 		</div>
 	<div style="height:10px; background: #090979;"></div>
 	</footer>	
-
-
-<!-- JavaScript Bundle with Popper -->
-
-
-<!-- jQuery and Bootstrap Bundle (includes Popper) -->
-	<script src="js/jquery-3.5.1.slim.min.js"></script>
-	<script src="js/bootstrap.bundle.min.js" ></script>
-	<script>
-		$('#year').text(new Date().getFullYear());
-	</script>
-	</body>
+	<!-- FOOTER END -->
+		<!-- jQuery and Bootstrap Bundle (includes Popper) -->
+		<script src="js/jquery-3.5.1.slim.min.js"></script>
+		<script src="js/bootstrap.bundle.min.js" ></script>
+		<script>
+			$('#year').text(new Date().getFullYear());
+		</script>
+</body>
 </html>
