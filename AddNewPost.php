@@ -2,6 +2,11 @@
 <?php require_once("Includes/DB.php"); ?>
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
+
+<?php $_SESSION["TrackingURL"] = $_SERVER["PHP_SELF"]; ?>
+
+<?php Confirm_Login(); ?>
+
 <?php 
 
 if(isset($_POST['Submit'])) {
@@ -10,7 +15,7 @@ if(isset($_POST['Submit'])) {
 		$Image = $_FILES["Image"]["name"];
 		$Target = "Uploads/".basename($_FILES["Image"]["name"]);
 		$PostText = $_POST["PostDescription"];
-		$Admin = "John";
+		$Admin = $_SESSION["UserName"];
 		date_default_timezone_set("Asia/Karachi");
 		$CurrentTime = time();
 		$DateTime = strftime("%B-%d-%Y %H:%M:%S", $CurrentTime);

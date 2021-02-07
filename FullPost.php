@@ -161,8 +161,8 @@ if(isset($_POST['Submit'])) {
 				 	<img src="Uploads/<?php echo htmlentities($Image); ?>" style="max-height: 450px" class="img-fluid card-img-top" alt="Failed To Upload Image" />
 				 	<div class="card-body">
 				 		<h4 class="card-title"><?php echo htmlentities($PostTitle); ?></h4>
-				 			<small class="text-muted">Written by: <?php echo $Admin ?> On <?php echo htmlentities($DateTime) ?></small>
-				 			<span style="float: right;" class="badge badge-dark text-light">Comments 20</span>
+				 			<small class="text-muted">Category: <span class="text-dark"><?= htmlentities($Category); ?></span> | Written by: <span class="text-dark"><?php echo $Admin ?></span> On <span class="text-dark"><?php echo htmlentities($DateTime) ?></span></small>
+				 			
 				 			<hr>
 				 			<p class="card-text">
 				 				<?php 

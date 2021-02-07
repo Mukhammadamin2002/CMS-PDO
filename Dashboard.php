@@ -11,7 +11,7 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="X-UA-Compatible" content="ie-edge">
-		<title>Posts</title>
+		<title>Dashboard</title>
 		<link rel="stylesheet" href="Css/bootstrap.min.css">
 		<link rel="stylesheet" href="Css/Styles.css">
 		<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
@@ -69,7 +69,7 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-md-12">
-						<h1><i class="fas fa-blog" style="color: #097879"></i> Blog Posts</h1>
+						<h1><i class="fas fa-cog" style="color: #097879"></i> Dashboard</h1>
 					</div>
 					<div class="col-lg-3 mb-2">
 						<a href="AddNewPost.php" class="btn btn-primary btn-block"><i class="fas fa-edit"></i> Add New Post</a>
@@ -94,77 +94,113 @@
 
 	<section class="container py-2 mb-4">
 		<div class="row">
-			<div class="col-lg-12">
 				<?php 
 
-				echo ErrorMessage();
-				echo SuccessMessage();
+				// echo ErrorMessage();
+				// echo SuccessMessage();
 
 				 ?>
-				<table class="table table-striped table-bordered table-hover">
+			<!-- Left Side Area Start -->
+			<div class="col-lg-2 d-none d-md-block">
+
+				<div class="card text-center bg-dark text-white mb-3">
+					<div class="card-body">
+						<h1 class="lead">Posts</h1>
+						<h4 class="display-5">
+							<i class="fab fa-readme"></i>
+							<?php 
+
+							TotalPosts();
+
+							 ?>
+						</h4>
+					</div>
+				</div>
+
+				<div class="card text-center bg-dark text-white mb-3">
+					<div class="card-body">
+						<h1 class="lead">Categories</h1>
+						<h4 class="display-5">
+							<i class="fas fa-folder"></i>
+							<?php 
+
+							TotalCategories();
+
+							 ?>
+						</h4>
+					</div>
+				</div>
+
+				<div class="card text-center bg-dark text-white mb-3">
+					<div class="card-body">
+						<h1 class="lead">Admins</h1>
+						<h4 class="display-5">
+							<i class="fas fa-users"></i>
+							<?php 
+
+							TotalAdmins();
+
+							 ?>
+						</h4>
+					</div>
+				</div>
+
+				<div class="card text-center bg-dark text-white mb-3">
+					<div class="card-body">
+						<h1 class="lead">Comments</h1>
+						<h4 class="display-5">
+							<i class="fas fa-comments"></i>
+							<?php 
+
+							TotalComments();
+
+							 ?>
+						</h4>
+					</div>
+				</div>
+				
+			</div>
+			<!-- Left Side Area End -->
+
+
+			<!-- Right Side Area Start -->
+			<div class="col-lg-10">
+				<h1 class="">Top Posts</h1>
+				<table class="table table-stripped table-hover">
 					<thead class="thead-dark">
 						<tr>
-							<th>#</th>
+							<th>No .</th>
 							<th>Title</th>
-							<th>Category</th>
 							<th>Date&Time</th>
 							<th>Author</th>
-							<th>Banner</th>
 							<th>Comments</th>
-							<th>Action</th>
-							<th>Live Preview</th>
+							<th>Detailes</th>
 						</tr>
 					</thead>
-					<?php
+					<?php 
+					$SrNo = 0;
 					global $ConnectingDB;
-					$sql = "SELECT * FROM posts";
+					$sql = "SELECT * FROM posts ORDER BY id desc LIMIT 0,5";
 					$stmt = $ConnectingDB->query($sql);
-					$Sr = 0;
 					while ($DataRows = $stmt->fetch()) {
-							$Id 		= $DataRows["id"];
-							$DateTime 	= $DataRows["datetime"];
-							$PostTitle 	= $DataRows["title"];
-							$Category 	= $DataRows["category"];
-							$Admin		= $DataRows["author"];
-							$Image 		= $DataRows["image"];
-							$PostText 	= $DataRows["post"];
-							$Sr++;
-					?>
-					<tbody>
-						<tr>
-							<td><?php echo $Sr; ?></td>
-							<td>
-								<?php
-									if (strlen($PostTitle) > 20) {$PostTitle = substr($PostTitle, 0,18).'...';}
-									echo $PostTitle;
-								?>
-							</td>
-							<td>
-								<?php
-									if (strlen($Category) > 8) {$Category = substr($Category, 0,8).'...';}
-									echo $Category;
-								?>
-							</td>
-							<td>
-								<?php
-								if (strlen($DateTime) > 11) {$DateTime = substr($DateTime, 0,11).'...';}
-								echo $DateTime;
-								?>
-							</td>
-							<td>
-								<?php
-								if (strlen($Admin) > 6) {$Admin = substr($Admin, 0,6).'...';}
-								echo $Admin;
-								?>
-							</td>
-							<td>
-								<img src="Uploads/<?php echo $Image ?>" width="150;" height="50;">
-							</td>
-					 			<td>
+						$PostId = $DataRows["id"];
+						$DateTime =$DataRows["datetime"];
+						$Author = $DataRows["author"];
+						$Title = $DataRows["title"];
+						$SrNo++;
+
+					 ?>
+					 <tbody>
+					 	<tr>
+					 		<td><?= $SrNo ?></td>
+					 		<td><?= $Title ?></td>
+					 		<td><?= $DateTime ?></td>
+					 		<td><?= $Author ?></td>
+					 		<td>
 					 			
 					 				<?php 
 
-					 				$Total = ApproveCommentsAccordingToPost($Id);
+					 				$Total = ApproveCommentsAccordingToPost($PostId);
 
 					 				if ($Total > 0) {
 					 					?>
@@ -176,7 +212,7 @@
 
 					 				<?php 
 
-					 				$Total = DisApproveCommentsAccordingToPost($Id);
+					 				$Total = DisApproveCommentsAccordingToPost($PostId);
 
 					 				if ($Total > 0) {
 					 					?>
@@ -186,22 +222,14 @@
 	 								<?php } ?>
 					 			
 
-					 			</td>
-
-							<td>
-								<a href="EditPost.php?id=<?php echo $Id; ?>"><span class="btn btn-warning">Edit</span></a>
-								<a href="DeletePost.php?id=<?php echo $Id; ?>"><span class="btn btn-danger">Delete</span></a>
-							</td>
-
-							<td>
-								<a href="FullPost.php?id=<?php echo $Id; ?>" target="_blank"><span class="btn btn-primary">Live Preview</span></a>
-							</td>
-
-						</tr>
-					</tbody>
-					<?php }  ?>
+					 		</td>
+					 		<td><a target="_blank" href="FullPost.php?id=<?php echo $PostId; ?>"><span class="btn btn-info">Preview</span></a></td>
+					 </tbody>
+					<?php } ?>
 				</table>
 			</div>
+			<!-- Right Side Area End -->
+
 		</div>
 	</section>
 

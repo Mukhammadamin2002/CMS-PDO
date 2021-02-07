@@ -2,6 +2,11 @@
 <?php require_once("Includes/DB.php"); ?>
 <?php require_once("Includes/Functions.php"); ?>
 <?php require_once("Includes/Sessions.php"); ?>
+
+<?php $_SESSION["TrackingURL"] = $_SERVER["PHP_SELF"]; ?>
+
+<?php Confirm_Login(); ?>
+
 <?php 
 
 if(isset($_POST['Submit'])) {
@@ -9,7 +14,7 @@ if(isset($_POST['Submit'])) {
 		$Name 				= $_POST["Name"];
 		$Password 			= $_POST["Password"];
 		$ConfirmPassword	= $_POST["ConfirmPassword"];
-		$Admin = "John";
+		$Admin 				= $_SESSION["UserName"];
 		date_default_timezone_set("Asia/Karachi");
 		$CurrentTime = time();
 		$DateTime = strftime("%B-%d-%Y %H-%M-%S", $CurrentTime);
@@ -146,7 +151,7 @@ if(isset($_POST['Submit'])) {
 						<div class="form-group">
 							<label for="Name"><span class="FieldInfo">Name: </span></label>
 							<input class="form-control" type="text" name="Name" id="Name" placeholder="Enter Your Name" value="">
-							<small class="text-warning text-muted">Optional</small>
+							<p class="text-warning text-muted">Optional</p>
 						</div>
 
 						<div class="form-group">
@@ -175,6 +180,56 @@ if(isset($_POST['Submit'])) {
 					</div>
 				</div>
 			</form>
+
+						<h2>Existing Admins</h2>
+				<table class="table table-striped table-bordered table-hover">
+					<thead class="thead-dark">
+						<tr>
+							<th>No. </th>
+							<th>Date&Time</th>
+							<th>Username</th>
+							<th>Admin Name</th>
+							<th>Added By</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+
+				<?php 
+				global $ConnectingDB;
+				$sql = "SELECT * FROM admins ORDER BY id desc";
+				$Execute = $ConnectingDB->query($sql);
+				$SrNo = 0;
+				while ($DataRows = $Execute->fetch()) {
+					$AdminId = $DataRows["id"];
+					$DateTime = $DataRows["datetime"];
+					$AdminUsername = $DataRows["username"];
+					$AdminName = $DataRows["aname"];
+					$AddedBy = $DataRows["addedby"];
+					$SrNo++;
+					// if (strlen($CommenterName) > 10) {
+					// 	$CommenterName = substr($CommenterName, 0,10) . '...';
+					// }
+
+					// if (strlen($DateTimeOfComment) > 9) {
+					// 	$DateTimeOfComment = substr($DateTimeOfComment, 0,11) . '...';
+					// }
+
+				 ?>
+
+				 <tbody>
+				 	<tr>
+				 		<td><?= htmlentities($SrNo); ?></td>
+				 		<td><?= htmlentities($DateTime); ?></td>
+				 		<td><?= htmlentities($AdminUsername); ?></td>
+				 		<td><?= htmlentities($AdminName); ?></td>
+				 		<td><?= htmlentities($AddedBy); ?></td>
+				 		<td><a href="DeleteAdmin.php?id=<?php echo $AdminId; ?>" class="btn btn-danger">Delete</a></td>
+
+				 	</tr>
+				 </tbody>
+				<?php } ?>
+			</table>
+
 		</div>
 	</div>
 </section>
@@ -189,7 +244,7 @@ if(isset($_POST['Submit'])) {
 		<div class="container">
 			<div class="row">
 				<div class="col">
-				<p class="lead text-center">Made By | Mukhammadamin Abdullaev | <span id="year"></span> &copy; ----All right Reserved. </p>
+				<p class="lead text-center">Made By | Mukhammadamin Abdullaev | <span id="year"></span> &copy; ``All right Reserved`` </p>
 				<p class="text-center small"><a href="#" style="color: white; text-decoration: none;cursor: pointer;" target="_blank">This site is only &trade; used for study porpose</a></p>
 				</div>
 			</div>
