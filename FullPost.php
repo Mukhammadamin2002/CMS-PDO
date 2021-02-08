@@ -52,7 +52,7 @@ if(isset($_POST['Submit'])) {
 	<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="X-UA-Compatible" content="ie-edge">
-		<title>Blog Page</title>
+		<title>Full Post Page </title>
 		<link rel="stylesheet" href="Css/bootstrap.min.css">
 		<link rel="stylesheet" href="Css/Styles.css">
 		<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
@@ -145,6 +145,11 @@ if(isset($_POST['Submit'])) {
 					}
 					$sql = "SELECT * FROM posts WHERE id = '$PostIdFromURL'";
 					$stmt = $ConnectingDB->query($sql);
+					$Result = $stmt->rowcount();
+					if ($Result != 1) {
+						$_SESSION["ErrorMessage"]="Undefined Request";
+						Redirect_to("Blog.php?page=1");
+					}
 				}
 				while ($DataRows = $stmt->fetch()) {
 
@@ -161,14 +166,14 @@ if(isset($_POST['Submit'])) {
 				 	<img src="Uploads/<?php echo htmlentities($Image); ?>" style="max-height: 450px" class="img-fluid card-img-top" alt="Failed To Upload Image" />
 				 	<div class="card-body">
 				 		<h4 class="card-title"><?php echo htmlentities($PostTitle); ?></h4>
-				 			<small class="text-muted">Category: <span class="text-dark"><?= htmlentities($Category); ?></span> | Written by: <span class="text-dark"><?php echo $Admin ?></span> On <span class="text-dark"><?php echo htmlentities($DateTime) ?></span></small>
+				 			<small class="text-muted">Category: <span class="text-dark"><a href="Blog.php?category=<?= htmlentities($Category); ?>"><?= htmlentities($Category); ?></a></span> | Written by: <span class="text-dark"><a href="Profile.php?username=<?php echo htmlentities($Admin); ?>"><?php echo $Admin ?></a></span> On <span class="text-dark"><?php echo htmlentities($DateTime) ?></span></small>
 				 			
 				 			<hr>
 				 			<p class="card-text">
 				 				<?php 
 								echo htmlentities($PostDescription); 
 			 					?>
-				 				</p>
+			 				</p>
 				 	</div>
 				 </div>
 	<br>
@@ -247,43 +252,4 @@ if(isset($_POST['Submit'])) {
 			</div>
 			<!-- Main Area End -->
 
-
-
-            <!-- Side Area Start -->
-			<div class="col-sm-4" style="min-height: 40px; background: #00d4ff;">
-				
-			</div>
-            <!-- Side Area End -->
-		</div>
-
-	</div>
-
-	<!-- HEADER  END-->
-
-<!-- <div style="min-height: 360px;"></div> -->
-
-		<!-- FOOTER -->
-	<footer class="bg-dark text-white">
-		<div class="container">
-			<div class="row">
-				<div class="col">
-				<p class="lead text-center">Made By | Mukhammadamin Abdullaev | <span id="year"></span> &copy; ----All right Reserved. </p>
-				<p class="text-center small"><a href="#" style="color: white; text-decoration: none;cursor: pointer;" target="_blank">This site is only &trade; used for study porpose</a></p>
-				</div>
-			</div>
-		</div>
-	</footer>	
-	<div style="height:10px; background: #090979;"></div>
-
-
-<!-- JavaScript Bundle with Popper -->
-
-
-<!-- jQuery and Bootstrap Bundle (includes Popper) -->
-	<script src="js/jquery-3.5.1.slim.min.js"></script>
-	<script src="js/bootstrap.bundle.min.js" ></script>
-	<script>
-		$('#year').text(new Date().getFullYear());
-	</script>
-</body>
-</html>
+			<?php require_once ("Footer.php"); ?>

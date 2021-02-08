@@ -9,48 +9,65 @@
 
 <?php 
 
-if(isset($_POST['Submit'])) {
-		$PostTitle = $_POST["PostTitle"];
-		$Category = $_POST["Category"];
-		$Image = $_FILES["Image"]["name"];
-		$Target = "Uploads/".basename($_FILES["Image"]["name"]);
-		$PostText = $_POST["PostDescription"];
-		$Admin = $_SESSION["UserName"];
-		date_default_timezone_set("Asia/Karachi");
-		$CurrentTime = time();
-		$DateTime = strftime("%B-%d-%Y %H:%M:%S", $CurrentTime);
+// Fetching the existing Admin Data Start
+$AdminId = $_SESSION["UserId"];
+global $ConnectingDB;
+$sql = "SELECT * FROM admins WHERE id='$AdminId'";
+$stmt = $ConnectingDB->query($sql);
+while ($DataRows = $stmt->fetch()) {
+	$ExistingName = $DataRows["aname"];
+	$ExistingHeadline = $DataRows["aheadline"];
+	$ExistingBio = $DataRows["abio"];
+	$ExistingImage = $DataRows["aimage"];
+	$ExistingUsername = $DataRows["username"];
+}
+// Fetching the existing Admin Data End
 
-		if (empty($PostTitle)) {
-			$_SESSION["ErrorMessage"] = 'Title Can\'t be empty!';
-			Redirect_to("AddNewPost.php");
-		} elseif (strlen($PostTitle) < 5) {
-			$_SESSION["ErrorMessage"] = 'Post Title should be greater than 5 characters';
-			Redirect_to("AddNewPost.php");
-		} elseif (strlen($PostText) > 9999) {
+if(isset($_POST['Submit'])) {
+		$AName = $_POST["Name"];
+		$AHeadline = $_POST["Headline"];
+		$ABio = $_POST["Bio"];
+		$Image = $_FILES["Image"]["name"];
+		$Target = "Images/".basename($_FILES["Image"]["name"]);
+		
+
+		if (strlen($AHeadline) > 30) {
+			$_SESSION["ErrorMessage"] = 'Headline should be less than 30 characters';
+			Redirect_to("MyProfile.php");
+		} elseif (strlen($ABio) > 500) {
 			$_SESSION["ErrorMessage"] = 'Post Description should be less than 10000 characters';
-			Redirect_to("AddNewPost.php");
+			Redirect_to("MyProfile.php");
 		} else {
-			// Query to insert Post in DB when everything is fine
+			// Query to UPDATE Admin Data in DB when everything is fine
 			global $ConnectingDB;
-			$sql = "INSERT INTO posts(datetime, title, category, author, image, post)";
-			$sql .= "VALUES(:dateTime,:postTitle,:categoryName,:adminName,:imageName,:postDescription)";
-			$stmt = $ConnectingDB->prepare($sql);
-			$stmt->bindValue(':dateTime', $DateTime);
-			$stmt->bindValue(':postTitle', $PostTitle);
-			$stmt->bindValue(':categoryName',$Category);
-			$stmt->bindValue(':adminName', $Admin);
-			$stmt->bindValue(':imageName', $Image);
-			$stmt->bindValue(':postDescription', $PostText);
-			$Execute = $stmt->execute();
+			if (!empty($_FILES["Image"]["name"])) {
+
+			$sql = "UPDATE admins SET 
+				aname='$AName',
+				aheadline='$AHeadline',
+				abio='$ABio',
+				aimage='$Image'
+				WHERE id = '$AdminId'";
+
+			} else {
+			$sql = "UPDATE admins SET 
+				aname='$AName',
+				aheadline='$AHeadline',
+				abio='$ABio'
+				WHERE id ='$AdminId'";
+			}
+
+			$Execute = $ConnectingDB->query($sql);
 
 			move_uploaded_file($_FILES['Image']["tmp_name"], $Target);
+			// var_dump($Execute);
 
 			if ($Execute) {
-				$_SESSION["SuccessMessage"]="Post with id : " .$ConnectingDB->lastInsertId()." Added Successfully";
-				Redirect_to("AddNewPost.php");
+				$_SESSION["SuccessMessage"]="Detailes Updated Successfully";
+				Redirect_to("MyProfile.php");
 			} else {
 				$_SESSION["ErrorMessage"] = 'Something went wrong. Try Again !';
-				Redirect_to("AddNewPost.php");
+				Redirect_to("MyProfile.php");
 			}
 		}
 } // Ending of Submit Button If-Condition 
@@ -63,10 +80,10 @@ if(isset($_POST['Submit'])) {
 <meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="X-UA-Compatible" content="ie-edge">
-		<title>Posts</title>
 		<link rel="stylesheet" href="Css/bootstrap.min.css">
 		<link rel="stylesheet" href="Css/Styles.css">
 		<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+		<title>My Profile</title>
 	</head>
 <body>
 	<!-- Navbar -->
@@ -120,7 +137,8 @@ if(isset($_POST['Submit'])) {
 			<div class="container">
 				<div class="row">
 					<div class="col-md-12">
-					<h1><i class="fas fa-edit" style="color: #097879"></i> Add New Post</h1>
+					<h1><i class="fas fa-user mr-2 text-primary"></i>@<?php echo $ExistingUsername; ?></h1>
+					<small><?php echo $ExistingHeadline ?></small>
 					</div>
 				</div>
 			</div>
@@ -133,48 +151,61 @@ if(isset($_POST['Submit'])) {
 
 <section class="container py-2 mb-4">
 	<div class="row">
-		<div class="offset-lg-1 col-lg-10" style="min-height: 400px;">
+		<!-- Left Area -->
+		<div class="col-md-3">
+			<div class="card">
+				<div class="card-header bg-dark text-light">
+					<h3 class="">
+						<?php echo $ExistingName; ?>
+					</h3>
+				</div>
+				<div class="card-body">
+					<img src="Images/<?php echo $ExistingImage; ?>" class="block img-fluid mb-3" alt="">
+					<div>
+						
+	<?php echo $ExistingBio; ?>
+	
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Right Area -->
+		<div class="col-md-9" style="min-height: 400px;">
+
 			<?php echo ErrorMessage(); ?>
 			<?php echo SuccessMessage(); ?>
-			<form action="AddNewPost.php" method="post" enctype="multipart/form-data">
-				<div class="card bg-secondary text-light mb-3">
+
+			<form action="MyProfile.php" method="post" enctype="multipart/form-data">
+				<div class="card bg-dark text-light">
+
+					<div class="card-header bg-secondary text-light">
+						<h4>Edit Profile</h4>
+					</div>
 					
-					<div class="card-body bg-dark">
+					<div class="card-body">
 						<div class="form-group">
-							<label for="title"><span class="FieldInfo">Category Title: </span></label>
-							<input class="form-control" type="text" name="PostTitle" id="title" placeholder="Type title here..." value="">
-						</div>
-
-						<div class="form-group">
-							<label for="CategoryTitle"><span class="FieldInfo">Choose Category: </span></label>
-							<select name="Category" id="CategoryTitle" class="form-control">
-								<!-- Fetching all the categories from category table -->
-								<?php global $ConnectingDB;
-								$sql = "SELECT id,title FROM category";
-								$stmt = $ConnectingDB->query($sql);
-								while ($DataRows = $stmt->fetch()) {
-									
-									$Id = $DataRows["id"];
-									$CategoryName = $DataRows["title"]; 
+							<input class="form-control" type="text" name="Name" id="title" placeholder="Your Name" value="">
 						
-								 ?>
-								 <option><?php echo $CategoryName; ?></option>
-						 	<?php } ?>
-							</select>
+						</div>
+
+						<div class="form-group mt-2">
+							<input class="form-control" type="text" name="Headline" id="title" placeholder="Headline" value="">
+							<small class="text-muted"> Add a professional headline like, 'Engineer' at XYZ or 'Architect'</small>
+							<span class="text-danger"> Not more than 30 characters</span>
 						</div>
 
 						<div class="form-group">
-							<label for="imageSelect"><span class="FieldInfo"> Select Image: </span></label>
+							<textarea class="form-control" placeholder="Bio" name="Bio" rows="8" cols="80" id="Post" cols="30" rows="10"></textarea>
+						</div>
+					
+
+						<div class="form-group">
 							<div class="custom-file">
 								<input class="custom-file-input" type="File" name="Image" id="imageSelect" value="">
 								<label for="imageSelect" class="custom-file-label">Select Image</label>
 							</div>
 						</div>
 
-						<div class="form-group">
-							<label for="Post"><span class="FieldInfo"> Post: </span></label>
-							<textarea class="form-control" name="PostDescription" rows="8" cols="80" id="Post" cols="30" rows="10"></textarea>
-						</div>
 
 						<div class="row text-center">
 							<div class="col-lg-6 mt-2">
